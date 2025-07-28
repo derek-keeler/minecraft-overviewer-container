@@ -13,8 +13,10 @@ FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu
 # -------------------- #
 
 ARG GITHUB_REF
-ARG GITHUB_REPOSITORY
+ARG GITHUB_REPOSITORY="https://github.com/GregoryAM-SP/The-Minecraft-Overviewer.git"
 ARG GITHUB_SHA
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 
 LABEL OriginalAuthor='Mark Ide Jr (https://www.mide.io)'
 LABEL Maintainer="Derek Keeler <34773432+derek-keeler@users.noreply.github.com>"
@@ -50,10 +52,10 @@ RUN apt-get update && \
         optipng && \
     apt-get autoremove -y -q && \
     apt-get clean -y -q && \
-    groupadd minecraft -g 1000 && \
-    useradd -m minecraft -u 1000 -g 1000 && \
+    groupadd minecraft -g $GROUP_ID && \
+    useradd -m minecraft -u $USER_ID -g $GROUP_ID && \
     mkdir -p /home/minecraft/render /home/minecraft/server && \
-    git clone --depth=1 https://github.com/GregoryAM-SP/The-Minecraft-Overviewer Minecraft-Overviewer && \
+    git clone --depth=1 $GITHUB_REPOSITORY Minecraft-Overviewer && \
     cd Minecraft-Overviewer && \
     python3 setup.py build && \
     python3 setup.py install
