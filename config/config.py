@@ -25,34 +25,29 @@ def signFilter(poi):
 
     # Only render signs with this function
     if poi["id"] in ["Sign", "minecraft:sign"]:
+        if 'Text1' in poi:
+            text_lines = [line for line in [poi['Text1'], poi['Text2'], poi['Text3'], poi['Text4']] if line.strip()]
+        else:
+            # v1.20+ sign filter
+            text_lines = []
+            front_text = poi.get('front_text', {})
+            back_text = poi.get('back_text', {})
+            
+            text_lines.extend(line for line in front_text.get('messages', []) if line.strip())
+            text_lines.extend(line for line in back_text.get('messages', []) if line.strip())
+
         sign_filter = os.environ["RENDER_SIGNS_FILTER"]
         hide_filter = os.environ["RENDER_SIGNS_HIDE_FILTER"] == "true"
-        # Transform the lines into an array and strip whitespace from each line.
-        lines = list(
-            map(
-                lambda l: l.strip(),
-                [
-                    poi["Text1"],
-                    poi["Text2"],
-                    poi["Text3"],
-                    poi["Text4"],
-                ],
-            )
-        )
-        # Remove all leading and trailing empty lines
-        while lines and not lines[0]:
-            del lines[0]
-        while lines and not lines[-1]:
-            del lines[-1]
+        
         # Determine if we should render this sign
         render_all_signs = len(sign_filter) == 0
-        render_this_sign = sign_filter in lines
+        render_this_sign = sign_filter in text_lines
         if render_all_signs or render_this_sign:
             # If the user wants to strip the filter string, we do that here. Only
             # do this if sign_filter isn't blank.
             if hide_filter and not render_all_signs:
-                lines = list(filter(lambda l: l != sign_filter, lines))
-            return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(lines))
+                text_lines = list(filter(lambda l: l != sign_filter, text_lines))
+                return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(text_lines))
 
 
 worlds["minecraft"] = "/home/minecraft/server/world"
