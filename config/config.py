@@ -24,9 +24,10 @@ def signFilter(poi):
     import os
 
     # Only render signs with this function
-    if poi["id"] in ["Sign", "minecraft:sign"]:
+    if poi["id"] in ["sign", "minecraft:sign"]:
         if 'Text1' in poi:
             text_lines = [line for line in [poi['Text1'], poi['Text2'], poi['Text3'], poi['Text4']] if line.strip()]
+            print("Found pre-1.20 sign")
         else:
             # v1.20+ sign filter
             text_lines = []
@@ -35,20 +36,27 @@ def signFilter(poi):
             
             text_lines.extend(line for line in front_text.get('messages', []) if line.strip())
             text_lines.extend(line for line in back_text.get('messages', []) if line.strip())
+            print("found post-1.20 sign")
 
         sign_filter = os.environ["RENDER_SIGNS_FILTER"]
-        hide_filter = os.environ["RENDER_SIGNS_HIDE_FILTER"] == "true"
+        #hide_filter = os.environ["RENDER_SIGNS_HIDE_FILTER"] == "true"
+        hide_filter = True
         
         # Determine if we should render this sign
         render_all_signs = len(sign_filter) == 0
         render_this_sign = sign_filter in text_lines
+        print(f"render_all_signs={render_all_signs}, render_this_sign={render_this_sign}")
+
         if render_all_signs or render_this_sign:
+            print(f"Rending sign with text [{'/n'.join(text_lines)}]")
             # If the user wants to strip the filter string, we do that here. Only
             # do this if sign_filter isn't blank.
             if hide_filter and not render_all_signs:
+                print('hiding the filter...')
                 text_lines = list(filter(lambda l: l != sign_filter, text_lines))
-                return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(text_lines))
 
+            # return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(text_lines))
+            return html.escape("\n".join(text_lines))
 
 worlds["minecraft"] = "/home/minecraft/server/world"
 outputdir = "/home/minecraft/render/"
