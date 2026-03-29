@@ -1,42 +1,29 @@
-# Minecraft Overviewer Docker Image
+# Minecraft Overviewer Docker Image Definition
 
-[![Docker](https://img.shields.io/docker/pulls/mide/minecraft-overviewer.svg)](https://hub.docker.com/r/mide/minecraft-overviewer/)
-[![Docker](https://img.shields.io/docker/stars/mide/minecraft-overviewer.svg)](https://hub.docker.com/r/mide/minecraft-overviewer/)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mide/minecraft-overviewer/master/LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/mide/minecraft-overviewer.svg)](https://github.com/mide/minecraft-overviewer/issues)
+Docker Image definition to Run [Minecraft Overviewer](https://overviewer.org/). Overviewer is a render that produces a render of a [Minecraft](https://minecraft.net/en/) world. The goal of this image is to easily run the Overviewer project without having to worry about dependencies, and to provide sane default configurations.
 
-Docker Image to Run [Minecraft Overviewer](https://overviewer.org/). Overviewer is a render that produces a render of a [Minecraft](https://minecraft.net/en/) world. The goal of this image is to easily run the Overviewer project without having to worry about dependencies, and to provide sane default configurations.
-
-:warning: **This project is not official nor affiliated with the wonderful [Minecraft Overviewer](https://overviewer.org/) project**.
-
-This project's code is hosted on [GitHub](https://github.com/mide/minecraft-overviewer), and the resulting Docker image is hosted on [Docker Hub](https://hub.docker.com/r/mide/minecraft-overviewer). Feel free to open [an issue on GitHub](https://github.com/mide/minecraft-overviewer/issues?q=is%3Aopen) if you're having problems.
-
-## :construction: Maintenance Status
-
-As of [April 5, 2023](https://github.com/overviewer/Minecraft-Overviewer/commit/13c1bddaf65dfaaf6c4c7a396c94db75bed4c089), the upstream Minecraft-Overviewer project is no longer being maintained. For more information on the matter, please check the project's [Official GitHub](https://github.com/overviewer/Minecraft-Overviewer).
+:warning: **This project is not official nor affiliated with the wonderful [The Minecraft Overviewer | Successor](https://github.com/GregoryAM-SP/The-Minecraft-Overviewer) project**.
 
 ## Running Minecraft Overviewer
 
 In the below example, `minecraft-overviewer` will read input in from `/home/user/path_to_minecraft_files/` and write the output to `/home/user/path_to_write_overviewer_output/`. It will run once and exit.
 
 ```shell
-docker pull mide/minecraft-overviewer:latest
+docker build -t local/the-minecraft-overviewer:latest -f Dockerfile .
 docker run \
   --rm \
-  -e MINECRAFT_VERSION="1.19.4" \
+  -e MINECRAFT_VERSION="26.1" \
   -v /home/user/path_to_minecraft_files/:/home/minecraft/server/:ro \
   -v /home/user/path_to_write_overviewer_output/:/home/minecraft/render/:rw \
-  mide/minecraft-overviewer:latest
+  local/minecraft-overviewer:latest
 ```
-
-_Note:_ The `latest` Docker tag is rebuilt daily. If there are changes to the [upstream project](https://github.com/overviewer/Minecraft-Overviewer/), it may take up to 24 hours for the new image to contain them.
 
 ## Environment Variables
 
 ### Required
 
 - `MINECRAFT_VERSION`
-  Set to the version of Minecraft the world is based from (Like `1.17`). Used for textures. You can also use the special version `latest` or `latest_snapshot` to just use the latest version (stable or snapshot, respectively).
+  Set to the version of Minecraft the world is based from (Like `26.1`). Used for textures. You can also use the special version `latest` or `latest_snapshot` to just use the latest version (stable or snapshot, respectively).
 
 ### Optional
 
@@ -63,6 +50,13 @@ _Note:_ The `latest` Docker tag is rebuilt daily. If there are changes to the [u
 
 - `RENDER_SIGNS_JOINER`
   Default Value: `<br />`. Set to the string that should be used to join the lines on the sign while rendering. Value of `"<br />"` will make each in-game line it's own line on the render. A value of `" "` will make all the in-game lines a single line on the render.
+
+- `GROUP_ID`
+  Default Value: `1000`. Set this to the value of the group that should have access to the output folder. You will only need to do this if the user who owns the folder on the system you are running on is different than the default (for example, a special `minecraft:minecraft` group:user combination).
+
+- `USER_ID`
+  Default Value: `1000`. Set this to the value of the user ID that should have access to the output folder. You will only need to do this if the user who owns the folder on the system you are running on is different than the default (for example, a special `minecraft:minecraft` group:user combination).
+
 
 ## Mapped Directories / Volumes
 
