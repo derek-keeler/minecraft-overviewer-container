@@ -6,13 +6,13 @@
 # The Minecraft-Overviewer render will be output at
 #     /home/minecraft/render
 
-FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu
+FROM mcr.microsoft.com/openjdk/jdk:25-ubuntu
 
 # -------------------- #
 # BUILD-TIME ARGUMENTS #
 # -------------------- #
 
-ARG GITHUB_REF
+ARG GITHUB_REF=main
 ARG GITHUB_REPOSITORY="https://github.com/GregoryAM-SP/The-Minecraft-Overviewer.git"
 ARG GITHUB_SHA
 ARG USER_ID=1000
@@ -55,7 +55,7 @@ RUN apt-get update && \
     groupadd minecraft -g $GROUP_ID && \
     useradd -m minecraft -u $USER_ID -g $GROUP_ID && \
     mkdir -p /home/minecraft/render /home/minecraft/server && \
-    git clone --depth=1 $GITHUB_REPOSITORY Minecraft-Overviewer && \
+    git clone --depth=1 -b $GITHUB_REF $GITHUB_REPOSITORY Minecraft-Overviewer && \
     cd Minecraft-Overviewer && \
     python3 setup.py build && \
     python3 setup.py install
