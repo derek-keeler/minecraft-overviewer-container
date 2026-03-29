@@ -6,7 +6,7 @@
 # The Minecraft-Overviewer render will be output at
 #     /home/minecraft/render
 
-FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu
+FROM mcr.microsoft.com/openjdk/jdk:25-ubuntu
 
 # -------------------- #
 # BUILD-TIME ARGUMENTS #
