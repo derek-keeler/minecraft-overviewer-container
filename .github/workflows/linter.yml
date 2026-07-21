@@ -30,6 +30,6 @@ jobs:
           push: false
           platforms: linux/amd64,linux/arm64
           build-args: |
-            GITHUB_REF="${{ github.ref }}"
-            GITHUB_REPOSITORY="${{ github.repository }}"
-            GITHUB_SHA="${{ github.sha }}"
+            GITHUB_REF=main
+            GITHUB_REPOSITORY=https://github.com/derek-keeler/The-Minecraft-Overviewer.git
+            GITHUB_SHA=${{ github.sha }}
