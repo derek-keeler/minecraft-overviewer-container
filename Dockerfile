@@ -6,7 +6,7 @@
 # The Minecraft-Overviewer render will be output at
 #     /home/minecraft/render
 
-FROM mcr.microsoft.com/openjdk/jdk:25-ubuntu
+FROM python:3.14-slim-trixie
 
 # -------------------- #
 # BUILD-TIME ARGUMENTS #
@@ -39,26 +39,34 @@ ENV RENDER_SIGNS_JOINER="<br/>"
 
 WORKDIR /home/minecraft/
 
-RUN apt-get update && \
-    apt-get upgrade -y -q && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        jq \
-        python3-dev python3-numpy python3-pil python3 \
-        wget \
-        optipng && \
-    apt-get autoremove -y -q && \
-    apt-get clean -y -q && \
-    groupadd minecraft -g $GROUP_ID && \
-    useradd -m minecraft -u $USER_ID -g $GROUP_ID && \
-    mkdir -p /home/minecraft/render /home/minecraft/server && \
-    git clone --depth=1 -b $GITHUB_REF $GITHUB_REPOSITORY Minecraft-Overviewer && \
-    cd Minecraft-Overviewer && \
-    python3 setup.py build && \
-    python3 setup.py install
+RUN apt-get update && apt-get upgrade -qq -y && apt-get install -y --no-install-recommends \
+	gcc \
+	build-essential \
+	ca-certificates \
+	curl \
+	jq \
+	wget \
+	optipng \
+	git \
+	libjpeg-dev \
+	zlib1g-dev \
+	&& python3 -m pip install -qq -U pip setuptools \
+        && curl -o jdk.tar.gz -L https://aka.ms/download-jdk/microsoft-jdk-25-linux-x64.tar.gz \
+        && mkdir -p /usr/lib/jvm/msopenjdk-25 \
+        && tar -xvzf jdk.tar.gz -C /usr/lib/jvm/msopenjdk-25 --strip-components 1 \
+        && rm jdk.tar.gz \
+        && for f in `find /usr/lib/jvm/msopenjdk-25/bin/ -type f -printf "%f\n"`; do update-alternatives --install /usr/bin/${f} ${f} /usr/lib/jvm/msopenjdk-25/bin/${f} 2082; done \
+	&& git clone --depth=1 -b $GITHUB_REF $GITHUB_REPOSITORY Minecraft-Overviewer \
+	&& cd Minecraft-Overviewer \
+	&& git clone --branch=12.1.1 --depth=1 https://github.com/python-pillow/Pillow.git /tmp/pillow \
+	&& PIL_INCLUDE_DIR=/tmp/pillow/src/libImaging pip install . \
+	&& PIL_INCLUDE_DIR=/tmp/pillow/src/libImaging python3 setup.py build \
+	&& apt-get autoremove -y -qq \
+	&& apt-get clean -y -qq \
+	&& groupadd minecraft -g $GROUP_ID \
+	&& useradd minecraft -u $USER_ID -g $GROUP_ID \
+	&& mkdir -p /home/minecraft/render /home/minecraft/server \
+	&& rm -rf /tmp/pillow /var/lib/apt/lists/*
 
 WORKDIR /home/minecraft/
 
