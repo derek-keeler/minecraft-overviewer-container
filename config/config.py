@@ -58,7 +58,7 @@ def signFilter(poi):
             # return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(text_lines))
             return html.escape("\n".join(text_lines))
 
-worlds["minecraft"] = "/home/minecraft/server/world"
+worlds["minecraft"] = "/home/minecraft/server/"
 outputdir = "/home/minecraft/render/"
 
 markers = [
