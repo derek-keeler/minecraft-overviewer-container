@@ -39,6 +39,8 @@ ENV RENDER_SIGNS_JOINER="<br/>"
 
 WORKDIR /home/minecraft/
 
+COPY config/config.py entrypoint.sh download_url.py /home/minecraft/
+
 RUN apt-get update && apt-get upgrade -qq -y && apt-get install -y --no-install-recommends \
 	gcc \
 	build-essential \
@@ -67,15 +69,11 @@ RUN apt-get update && apt-get upgrade -qq -y && apt-get install -y --no-install-
 	&& groupadd minecraft -g $GROUP_ID \
 	&& useradd minecraft -u $USER_ID -g $GROUP_ID \
 	&& mkdir -p /home/minecraft/render /home/minecraft/server \
-	&& rm -rf /home/minecraft/Minecraft-Overviewer/.git /tmp/pillow /var/lib/apt/lists/*
+	&& rm -rf /home/minecraft/Minecraft-Overviewer/.git /tmp/pillow /var/lib/apt/lists/* \
+	&& printf "GITHUB_REF=%s\nGITHUB_REPOSITORY=%s\nGITHUB_SHA=%s\nBUILD_DATE=$(date -u)\n" "$GITHUB_REF" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > /home/minecraft/build-details.txt \
+	&& chown minecraft:minecraft -R /home/minecraft/
 
 WORKDIR /home/minecraft/
-
-COPY config/config.py entrypoint.sh download_url.py /home/minecraft/
-# Add some timestamps / build information into the image
-RUN printf "GITHUB_REF=%s\nGITHUB_REPOSITORY=%s\nGITHUB_SHA=%s\nBUILD_DATE=$(date -u)\n" "$GITHUB_REF" "$GITHUB_REPOSITORY" "$GITHUB_SHA" > /home/minecraft/build-details.txt
-
-RUN chown minecraft:minecraft -R /home/minecraft/
 
 USER minecraft
 
