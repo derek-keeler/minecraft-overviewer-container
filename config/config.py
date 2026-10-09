@@ -6,7 +6,7 @@
 
 # Regarding `global`, see:
 # https://docs.overviewer.org/en/latest/signs/#filter-functions
-global html
+global html, SIGN_IDS, _sign_lines
 import html
 import os
 
