@@ -1,14 +1,17 @@
-# This config variable is loaded into the upstream Minecraft Overviewer project,
-# so it contains undefined variables and some `import` lines.
+# This config is loaded by Minecraft Overviewer, so several names used below
+# (worlds, renders, Base, EdgeLines, etc.) are supplied by Overviewer itself.
 # flake8: noqa: F821,F401
 # pylint: disable=undefined-variable
 # type: ignore
 
-# Regarding `global`, see
+# Regarding `global`, see:
 # https://docs.overviewer.org/en/latest/signs/#filter-functions
 global html
 import html
 import os
+
+
+SIGN_IDS = {"Sign", "sign", "minecraft:sign", "minecraft:hanging_sign"}
 
 
 def playerIcons(poi):
@@ -17,46 +20,46 @@ def playerIcons(poi):
         return "Last known location for {}".format(poi["EntityId"])
 
 
-# Only render the signs with the filter string in them. If filter string is
-# blank or unset, render all signs. Lines are joined with a configurable string.
+def _sign_lines(poi):
+    if "Text1" in poi:
+        plain_lines = [poi.get(key, "") for key in ["Text1", "Text2", "Text3", "Text4"]]
+        return [(line, html.escape(line)) for line in plain_lines if line.strip()]
+
+    lines = []
+    for side_name in ["front_text", "back_text"]:
+        side = poi.get(side_name, {})
+        plain_lines = side.get("messages", [])
+        html_lines = side.get("messagesHtml", [html.escape(line) for line in plain_lines])
+        lines.extend(
+            (plain_line, html_line)
+            for plain_line, html_line in zip(plain_lines, html_lines)
+            if plain_line.strip()
+        )
+    return lines
+
+
+# Only render signs containing the filter string. If the filter string is blank,
+# render all signs. Output uses messagesHtml because sign text is player-provided.
 def signFilter(poi):
-    # Because of how Overviewer reads this file, we must "import os" again here.
     import os
 
-    # Only render signs with this function
-    if poi["id"] in ["sign", "minecraft:sign"]:
-        if 'Text1' in poi:
-            text_lines = [line for line in [poi['Text1'], poi['Text2'], poi['Text3'], poi['Text4']] if line.strip()]
-            print("Found pre-1.20 sign")
-        else:
-            # v1.20+ sign filter
-            text_lines = []
-            front_text = poi.get('front_text', {})
-            back_text = poi.get('back_text', {})
-            
-            text_lines.extend(line for line in front_text.get('messages', []) if line.strip())
-            text_lines.extend(line for line in back_text.get('messages', []) if line.strip())
-            print("found post-1.20 sign")
+    if poi.get("id") not in SIGN_IDS:
+        return None
 
-        sign_filter = os.environ["RENDER_SIGNS_FILTER"]
-        #hide_filter = os.environ["RENDER_SIGNS_HIDE_FILTER"] == "true"
-        hide_filter = True
-        
-        # Determine if we should render this sign
-        render_all_signs = len(sign_filter) == 0
-        render_this_sign = sign_filter in text_lines
-        print(f"render_all_signs={render_all_signs}, render_this_sign={render_this_sign}")
+    lines = _sign_lines(poi)
+    sign_filter = os.environ.get("RENDER_SIGNS_FILTER", "-- RENDER --")
+    hide_filter = os.environ.get("RENDER_SIGNS_HIDE_FILTER", "true").lower() == "true"
+    render_all_signs = len(sign_filter) == 0
 
-        if render_all_signs or render_this_sign:
-            print(f"Rending sign with text [{'/n'.join(text_lines)}]")
-            # If the user wants to strip the filter string, we do that here. Only
-            # do this if sign_filter isn't blank.
-            if hide_filter and not render_all_signs:
-                print('hiding the filter...')
-                text_lines = list(filter(lambda l: l != sign_filter, text_lines))
+    if not render_all_signs and not any(sign_filter in plain_line for plain_line, _ in lines):
+        return None
 
-            # return html.escape(os.environ["RENDER_SIGNS_JOINER"].join(text_lines))
-            return html.escape("\n".join(text_lines))
+    if hide_filter and not render_all_signs:
+        lines = [(plain_line, html_line) for plain_line, html_line in lines if plain_line != sign_filter]
+
+    joiner = os.environ.get("RENDER_SIGNS_JOINER", "<br />")
+    return joiner.join(html_line for _, html_line in lines)
+
 
 worlds["minecraft"] = "/home/minecraft/server/"
 outputdir = "/home/minecraft/render/"
