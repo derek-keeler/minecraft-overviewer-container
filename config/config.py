@@ -64,6 +64,15 @@ def signFilter(poi):
 worlds["minecraft"] = "/home/minecraft/server/"
 outputdir = "/home/minecraft/render/"
 
+## pngcompression
+#
+# zlib level (0-9) for the PNG tiles of every render; Overviewer's default is
+# 6. Level 3 renders about 10% faster, but the tiles take about 23% more disk.
+# CAUTION: Be sure the performance gain to size increase is worthwhile! For
+#          example, a 40Gb Minecraft world will expand to 50Gb on disk.
+#
+# pngcompression = 6
+
 markers = [
     dict(name="Players", filterFunction=playerIcons),
     dict(name="Signs", filterFunction=signFilter),
